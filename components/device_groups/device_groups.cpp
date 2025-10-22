@@ -305,7 +305,7 @@ void device_groups::DeviceGroupsInit() {
   if (!Settings->device_group_share_in && !Settings->device_group_share_out) {
     Settings->device_group_share_in = Settings->device_group_share_out = 0xffffffff;
   }
-
+  next_log_time = 0;
   device_groups_initialized = true;
 }
 
@@ -1260,6 +1260,12 @@ void device_groups::DeviceGroupsLoop(void) {
 
 #if defined(ESP8266)
   while (device_groups_udp.parsePacket()) {
+#ifdef DEVICE_GROUPS_DEBUG
+    if (next_log_time >= millis()) {
+      next_log_time = millis() + 2000;
+      ESP_LOGD(TAG, "Received device groups UDP packet");
+    }
+#endif  // DEVICE_GROUPS_DEBUG
     struct multicast_packet packet;
     int length = device_groups_udp.read(packet.payload, sizeof(packet.payload) - 1);
     if (length > 0) {
