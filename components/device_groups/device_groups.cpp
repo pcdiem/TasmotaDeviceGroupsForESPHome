@@ -581,6 +581,9 @@ void device_groups::SendReceiveDeviceGroupMessage(struct device_group *device_gr
               uint32_t device = Settings->device_group_tie[device_group_index];
               if (device && device <= TasmotaGlobal.devices_present) {
                 bool on = (value & 1);
+#ifdef DEVICE_GROUPS_DEBUG
+  ESP_LOGD(TAG, "Checking power");
+#endif  // DEVICE_GROUPS_DEBUG
                 if (on != ((TasmotaGlobal.power >> (device - 1)) & 1))
                   ExecuteCommandPower(device, (on ? POWER_ON : POWER_OFF), SRC_REMOTE);
               }
@@ -591,6 +594,9 @@ void device_groups::SendReceiveDeviceGroupMessage(struct device_group *device_gr
               for (uint32_t i = 0; i < mask_devices; i++) {
                 uint32_t mask = 1 << i;
                 bool on = (value & mask);
+#ifdef DEVICE_GROUPS_DEBUG
+  ESP_LOGD(TAG, "Checking power");
+#endif  // DEVICE_GROUPS_DEBUG
                 if (on != (TasmotaGlobal.power & mask))
                   ExecuteCommandPower(i + 1, (on ? POWER_ON : POWER_OFF), SRC_REMOTE);
               }
@@ -1261,7 +1267,7 @@ void device_groups::DeviceGroupsLoop(void) {
 #if defined(ESP8266)
   while (device_groups_udp.parsePacket()) {
 #ifdef DEVICE_GROUPS_DEBUG
-    if (next_log_time >= millis()) {
+    if (next_log_time <= millis()) {
       next_log_time = millis() + 2000;
       ESP_LOGD(TAG, "Received device groups UDP packet");
     }
@@ -1444,6 +1450,9 @@ bool device_groups::XdrvCall(uint8_t Function) {
 }
 
 void device_groups::ExecuteCommandPower(uint32_t device, uint32_t state, uint32_t source) {
+#ifdef DEVICE_GROUPS_DEBUG
+  ESP_LOGD(TAG, "ExecuteCommandPower");
+#endif  // DEVICE_GROUPS_DEBUG
   power_t mask = 1 << (device - 1);  // Device to control
   power_t old_power = TasmotaGlobal.power;
   if (state <= POWER_TOGGLE) {
@@ -1483,8 +1492,14 @@ void device_groups::ExecuteCommandPower(uint32_t device, uint32_t state, uint32_
     }
 #endif
 #ifdef USE_LIGHT
+#ifdef DEVICE_GROUPS_DEBUG
+  ESP_LOGD(TAG, "ExecuteCommandPower: handle light");
+#endif  // DEVICE_GROUPS_DEBUG
     for (light::LightState *obj : this->lights_) {
       auto call = TasmotaGlobal.power > 0 ? obj->turn_on() : obj->turn_off();
+#ifdef DEVICE_GROUPS_DEBUG
+  ESP_LOGD(TAG, "ExecuteCommandPower: performing");
+#endif  // DEVICE_GROUPS_DEBUG
       call.perform();
   }
 #endif
