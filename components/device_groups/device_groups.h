@@ -322,6 +322,7 @@ class device_groups : public Component {
 
   struct device_group *device_groups_;
   uint32_t next_check_time;
+  uint32_t next_log_time;
   bool device_groups_initialized = false;
   bool device_groups_up = false;
   bool building_status_message = false;
