@@ -31,7 +31,7 @@
 namespace esphome {
 namespace device_groups {
 
-// #define DEVICE_GROUPS_DEBUG
+#define DEVICE_GROUPS_DEBUG
 #define DGR_MULTICAST_REPEAT_COUNT 1              // Number of times to re-send each multicast
 #define DGR_ACK_WAIT_TIME 150                     // Initial ms to wait for ack's
 #define DGR_MEMBER_TIMEOUT 45000                  // ms to wait for ack's before removing a member
